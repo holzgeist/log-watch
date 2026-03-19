@@ -179,3 +179,44 @@ fn test_matches_extension_with_dots_in_filename() {
     let path = PathBuf::from("my.file.name.txt");
     assert!(!log_watch::matches_extension(&path, Some(&exts)));
 }
+
+#[test]
+fn test_file_truncation_scenario() -> std::io::Result<()> {
+    // This test demonstrates the scenario where a file is truncated
+    // (e.g., during log rotation). The application should detect this
+    // and reset to read from the beginning.
+    
+    use std::io::Write;
+    
+    let temp_dir = tempfile::tempdir()?;
+    let file_path = temp_dir.path().join("rotating.log");
+    
+    // Create initial file with some content
+    let mut file = fs::File::create(&file_path)?;
+    file.write_all(b"Initial content\n")?;
+    file.flush()?;
+    drop(file);
+    
+    // Simulate reading and tracking offset
+    let initial_size = fs::metadata(&file_path)?.len();
+    assert_eq!(initial_size, 16); // "Initial content\n" = 16 bytes
+    
+    // Simulate file truncation (what happens during log rotation)
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(&file_path)?;
+    file.write_all(b"New content\n")?;
+    file.flush()?;
+    drop(file);
+    
+    // After truncation, file size should be smaller
+    let truncated_size = fs::metadata(&file_path)?.len();
+    assert_eq!(truncated_size, 12); // "New content\n" = 12 bytes
+    assert!(truncated_size < initial_size);
+    
+    // The application should detect that current_size < stored_offset
+    // and reset to 0 to read the new content from the beginning
+    
+    Ok(())
+}

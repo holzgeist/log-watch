@@ -103,22 +103,34 @@ fn main() -> Result<(), LogWatchError> {
                         continue;
                     }
                     if last_file != Some(path.clone()) {
-                        stdout()
-                            .lock()
-                            .write_all(path.to_string_lossy().as_bytes())?;
-                        stdout().lock().write_all(&[b'\n'])?;
+                        let mut stdout = stdout().lock();
+                        stdout.write_all(path.to_string_lossy().as_bytes())?;
+                        stdout.write_all(&[b'\n'])?;
+                        stdout.flush()?;
                         last_file = Some(path.clone());
                     }
+                    
                     let offset = offsets.entry(path.clone()).or_insert(0);
                     let mut f = File::open(path)?;
+                    
+                    // Check for file truncation (common in log rotation)
+                    let current_size = f.metadata()?.len();
+                    if current_size < *offset {
+                        // File was truncated, reset offset to beginning
+                        *offset = 0;
+                    }
+                    
                     f.seek(std::io::SeekFrom::Start(*offset))?;
                     let mut buf = vec![];
                     f.read_to_end(&mut buf)?;
                     *offset += buf.len() as u64;
-                    stdout().lock().write_all(&buf)?;
+                    
+                    let mut stdout = stdout().lock();
+                    stdout.write_all(&buf)?;
+                    stdout.flush()?;
                 }
             }
-            Err(e) => println!("watch error: {:?}", e),
+            Err(e) => eprintln!("watch error: {:?}", e),
         }
     }
 
