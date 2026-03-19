@@ -1,10 +1,10 @@
 use std::collections::HashSet;
 use std::ffi::OsString;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Check if a path matches the given extension filter.
 /// Returns true if no filter is provided, or if the file extension matches one in the filter.
-pub fn matches_extension(path: &PathBuf, extensions: Option<&HashSet<OsString>>) -> bool {
+pub fn matches_extension(path: &Path, extensions: Option<&HashSet<OsString>>) -> bool {
     match extensions {
         None => true, // No filter, accept all files
         Some(exts) => {

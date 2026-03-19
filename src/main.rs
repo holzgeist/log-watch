@@ -26,8 +26,8 @@ use std::{
 };
 
 use clap::Parser;
-use notify::Watcher;
 use log_watch::{matches_extension, recursively_list_files};
+use notify::Watcher;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -105,7 +105,7 @@ fn main() -> Result<(), LogWatchError> {
                     if last_file != Some(path.clone()) {
                         let mut stdout = stdout().lock();
                         stdout.write_all(path.to_string_lossy().as_bytes())?;
-                        stdout.write_all(&[b'\n'])?;
+                        stdout.write_all(b"\n")?;
                         stdout.flush()?;
                         last_file = Some(path.clone());
                     }
