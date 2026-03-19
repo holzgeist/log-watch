@@ -20,12 +20,12 @@ jobs:
         rust: [stable]
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      
+
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
@@ -33,7 +33,7 @@ jobs:
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-registry-
-      
+
       - name: Cache cargo index
         uses: actions/cache@v4
         with:
@@ -41,7 +41,7 @@ jobs:
           key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-git-
-      
+
       - name: Cache cargo build
         uses: actions/cache@v4
         with:
@@ -49,10 +49,10 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-build-target-
-      
+
       - name: Run tests
         run: cargo test --verbose --all-features
-      
+
       - name: Run doc tests
         run: cargo test --doc --verbose --all-features
 
@@ -61,12 +61,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
-      
+
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
@@ -74,7 +74,7 @@ jobs:
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-registry-
-      
+
       - name: Cache cargo index
         uses: actions/cache@v4
         with:
@@ -82,7 +82,7 @@ jobs:
           key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-git-
-      
+
       - name: Cache cargo build
         uses: actions/cache@v4
         with:
@@ -90,22 +90,34 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-build-target-
-      
+
       - name: Check formatting
         run: cargo fmt --all -- --check
-      
+
       - name: Run clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
   audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    env:
+      CARGO_AUDIT_VERSION: "0.22.1" # renovate: datasource=crate depName=cargo-audit
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Cache cargo-audit
+        id: cache-cargo-audit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-audit
+          key: ${{ runner.os }}-cargo-audit-${{ env.CARGO_AUDIT_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-audit-
+
       - name: Install cargo-audit
-        run: cargo install cargo-audit
-      
+        run: cargo install cargo-audit --version ${{ env.CARGO_AUDIT_VERSION }} --locked
+        if: steps.cache-cargo-audit.outputs.cache-hit != 'true'
+
       - name: Run cargo audit
         run: cargo audit
 
@@ -114,10 +126,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
@@ -125,7 +137,7 @@ jobs:
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-registry-
-      
+
       - name: Cache cargo index
         uses: actions/cache@v4
         with:
@@ -133,7 +145,7 @@ jobs:
           key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-git-
-      
+
       - name: Cache cargo build
         uses: actions/cache@v4
         with:
@@ -141,9 +153,9 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-build-target-
-      
+
       - name: Build
         run: cargo build --verbose --all-features
-      
+
       - name: Build release
         run: cargo build --release --verbose --all-features

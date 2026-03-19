@@ -50,6 +50,16 @@
   "cargo": {
     "enabled": true
   },
+  "regexManagers": [
+    {
+      "fileMatch": ["^\\.github/workflows/ci\\.yml$"],
+      "matchStrings": [
+        "CARGO_AUDIT_VERSION:\\s*\"(?<currentValue>.*?)\"\\s*#\\s*renovate:\\s*datasource=(?<datasource>.*?)\\s+depName=(?<depName>.*?)\\s*$"
+      ],
+      "datasourceTemplate": "crate",
+      "depNameTemplate": "cargo-audit"
+    }
+  ],
   "commitMessagePrefix": "chore(deps):",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewMajor}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{newValue}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
