@@ -8,7 +8,18 @@ repository = "https://github.com/holzgeist/log-watch"  # if applicable
 keywords = ["cli", "log", "tail", "watch", "files"]
 categories = ["command-line-utilities"]
 
+[lib]
+name = "log_watch"
+path = "src/lib.rs"
+
+[[bin]]
+name = "log-watch"
+path = "src/main.rs"
+
 [dependencies]
 clap = { version = "4.5.45", features = ["derive"] }
 notify = "8.2.0"
 thiserror = "2.0.14"
+
+[dev-dependencies]
+tempfile = "3.14"

@@ -27,6 +27,7 @@ use std::{
 
 use clap::Parser;
 use notify::Watcher;
+use log_watch::{matches_extension, recursively_list_files};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -54,21 +55,28 @@ fn main() -> Result<(), LogWatchError> {
     let (tx, rx) = mpsc::channel();
     let mut watcher = notify::recommended_watcher(tx)?;
 
+    let extensions = cli.extension.as_ref().map(|e| {
+        e.iter()
+            .map(|ext| {
+                // Normalize extensions by removing leading dot if present
+                let normalized = ext.strip_prefix('.').unwrap_or(ext);
+                OsString::from(normalized)
+            })
+            .collect::<HashSet<_>>()
+    });
+
     let mut offsets = HashMap::new();
     for path in cli.watch {
         watcher.watch(&path, notify::RecursiveMode::Recursive)?;
         let files = recursively_list_files(path)?;
         for f in files {
+            if !matches_extension(&f, extensions.as_ref()) {
+                continue;
+            }
             let m = metadata(&f)?;
             offsets.insert(f, m.len());
         }
     }
-
-    let extensions = cli.extension.map(|e| {
-        e.into_iter()
-            .map(|e| OsString::from(e))
-            .collect::<HashSet<_>>()
-    });
 
     let mut last_file = None;
 
@@ -91,13 +99,8 @@ fn main() -> Result<(), LogWatchError> {
                         offsets.remove(path);
                         continue;
                     }
-                    if let Some(extensions) = extensions.as_ref() {
-                        let extension = path.extension().map(|p| p.to_os_string());
-                        if let Some(extension) = extension {
-                            if !extensions.contains(&extension) {
-                                continue;
-                            }
-                        }
+                    if !matches_extension(path, extensions.as_ref()) {
+                        continue;
                     }
                     if last_file != Some(path.clone()) {
                         stdout()
@@ -120,21 +123,4 @@ fn main() -> Result<(), LogWatchError> {
     }
 
     Ok(())
-}
-
-fn recursively_list_files(path: PathBuf) -> std::io::Result<Vec<PathBuf>> {
-    let mut pending = vec![path];
-    let mut files = Vec::new();
-    while let Some(path) = pending.pop() {
-        if path.is_file() {
-            files.push(path);
-        } else {
-            let entries = path.read_dir()?;
-            for entry in entries {
-                pending.push(entry?.path());
-            }
-        }
-    }
-
-    Ok(files)
 }
