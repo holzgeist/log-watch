@@ -1,99 +1,98 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    ":dependencyDashboard",
-    ":semanticCommits",
-    ":automergeDigest",
-    ":automergeBranch"
-  ],
-  "labels": [
-    "dependencies"
-  ],
-  "assigneesFromCodeOwners": true,
-  "reviewersFromCodeOwners": true,
-  "schedule": [
-    "before 6am on Monday"
-  ],
-  "timezone": "UTC",
-  "packageRules": [
-    {
-      "matchManagers": [
-        "cargo"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "groupName": "cargo dependencies (non-major)",
-      "automerge": true
-    },
-    {
-      "matchManagers": [
-        "cargo"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "groupName": "cargo dependencies (major)",
-      "automerge": false
-    },
-    {
-      "matchManagers": [
-        "github-actions"
-      ],
-      "groupName": "GitHub Actions",
-      "automerge": true,
-      "matchUpdateTypes": [
-        "minor",
-        "patch",
-        "digest"
-      ]
-    },
-    {
-      "matchUpdateTypes": [
-        "digest"
-      ],
-      "automerge": true,
-      "matchPackageNames": [
-        "*"
-      ]
-    }
-  ],
-  "vulnerabilityAlerts": {
-    "labels": [
-      "security"
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        ":dependencyDashboard",
+        ":semanticCommits",
+        ":automergeDigest",
+        ":automergeBranch"
     ],
-    "assignees": [
-      "@holzgeist"
-    ]
-  },
-  "lockFileMaintenance": {
-    "enabled": true,
+    "labels": [
+        "dependencies"
+    ],
+    "assigneesFromCodeOwners": true,
+    "reviewersFromCodeOwners": true,
     "schedule": [
-      "before 6am on the first day of the month"
-    ]
-  },
-  "cargo": {
-    "enabled": true
-  },
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^\\.github/workflows/ci\\.yml$/"
-      ],
-      "matchStrings": [
-        "CARGO_AUDIT_VERSION:\\s*\"(?<currentValue>.*?)\"\\s*#\\s*renovate:\\s*datasource=(?<datasource>.*?)\\s+depName=(?<depName>.*?)\\s*$"
-      ],
-      "datasourceTemplate": "crate",
-      "depNameTemplate": "cargo-audit"
-    }
-  ],
-  "commitMessagePrefix": "chore(deps):",
-  "commitMessageTopic": "{{depName}}",
-  "commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewMajor}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{newValue}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
-  "prConcurrentLimit": 10,
-  "prHourlyLimit": 0,
-  "minimumReleaseAge": "3 days"
+        "before 6am on Monday"
+    ],
+    "timezone": "UTC",
+    "packageRules": [
+        {
+            "matchManagers": [
+                "cargo"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ],
+            "groupName": "cargo dependencies (non-major)",
+            "automerge": true
+        },
+        {
+            "matchManagers": [
+                "cargo"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "groupName": "cargo dependencies (major)",
+            "automerge": false
+        },
+        {
+            "matchManagers": [
+                "github-actions"
+            ],
+            "groupName": "GitHub Actions",
+            "automerge": true,
+            "matchUpdateTypes": [
+                "minor",
+                "patch",
+                "digest"
+            ]
+        },
+        {
+            "matchUpdateTypes": [
+                "digest"
+            ],
+            "automerge": true,
+            "matchPackageNames": [
+                "*"
+            ]
+        }
+    ],
+    "vulnerabilityAlerts": {
+        "labels": [
+            "security"
+        ],
+        "assignees": [
+            "@holzgeist"
+        ]
+    },
+    "lockFileMaintenance": {
+        "enabled": true,
+        "schedule": [
+            "before 6am on the first day of the month"
+        ]
+    },
+    "cargo": {
+        "enabled": true
+    },
+    "customManagers": [
+        {
+            "customType": "regex",
+            "managerFilePatterns": [
+                "/^\\.github/workflows/ci\\.yml$/"
+            ],
+            "matchStrings": [
+                "CARGO_AUDIT_VERSION:\\s*\"(?<currentValue>.*?)\"\\s*#\\s*renovate:\\s*datasource=(?<datasource>.*?)\\s+depName=(?<depName>.*?)\\s*$"
+            ],
+            "datasourceTemplate": "crate",
+            "depNameTemplate": "cargo-audit"
+        }
+    ],
+    "commitMessagePrefix": "chore(deps):",
+    "commitMessageTopic": "{{depName}}",
+    "commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewMajor}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{newValue}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
+    "prConcurrentLimit": 10,
+    "prHourlyLimit": 0
 }
